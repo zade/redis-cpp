@@ -69,33 +69,6 @@ namespace redis{
 
 	typedef std::vector<FileEvent*> FileEventVector_t;
 
-	class SokcetCtrl{
-		struct Impl;
-		Impl* impl;
-		FileEventVector_t events;
-		FiredEventVector_t fired;
-	public:
-		SokcetCtrl();
-		~SokcetCtrl();
-		int		init(int size);
-		int		addEvent(int fd, int mask);
-		void	delEvent(int fd, int delmask);
-		int		poll(timeval* tvp,int maxfd);
-		const char* getName() const;
-
-		FiredEventVector_t& getFiredEvents(){
-			return this->fired;
-		}
-
-		FileEventVector_t& getFileEvents(){
-			return this->events;
-		}
-
-		int getSetSize() const{
-			return static_cast<int>(this->events.size());
-		}
-	};
-
 	class TimeEvent : public IEvent{
 	public:
 		long id;
@@ -114,14 +87,15 @@ namespace redis{
 
 	typedef boost::function<void(EventLoop*)> BeforeSleepProc_t;
 
+	struct PollCtrl;
 	class EventLoop{
 		int maxfd;
 		int stop_flag;
 		long timeEventNextId;
 		time_t lastTime;
+		PollCtrl* poll;
 		TimeEventVector_t timers;
 		BeforeSleepProc_t beforeSleepProc;
-		SokcetCtrl	sctrl;
 
 		TimeEvent* searchNearestTimer();
 		int processTimeEvents();
@@ -138,11 +112,9 @@ namespace redis{
 		int deleteTimeEvent(long id);
 		int processEvents(int flags);
 		void main();
+		const char* getName() const;
 		void setBeforeSleepProc(const BeforeSleepProc_t& sleepProc){
 			this->beforeSleepProc = sleepProc;
-		}
-		const char* getName() const{
-			return this->sctrl.getName();
 		}
 		//////////////////////////////////////////////////////////////////////////
 		static int wait(int fd,int mask,long milliseconds);

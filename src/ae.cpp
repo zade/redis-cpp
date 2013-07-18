@@ -48,6 +48,25 @@ namespace redis { namespace{
 		*ms = when_ms;
 	}
 }
+
+struct PollCtrlBase{
+	FileEventVector_t events;
+	FiredEventVector_t fired;
+	
+	~PollCtrlBase(){
+		for (size_t i = 0 ; i < this->events.size(); ++ i){
+			delete this->events[i];
+		}
+	}
+
+	FiredEventVector_t& getFiredEvents(){
+		return this->fired;
+	}
+
+	FileEventVector_t& getFileEvents(){
+		return this->events;
+	}
+};
 /* Include the best multiplexing layer supported by this system.
 * The following should be ordered by performances, descending. */
 #ifdef HAVE_EVPORT
@@ -71,16 +90,22 @@ stop_flag(0),
 timeEventNextId(0),
 lastTime(time(NULL))
 {
+	this->poll = new PollCtrl();
 }
 
 EventLoop::~EventLoop(){
 	for (size_t i = 0 ; i < this->timers.size(); ++ i){
 		delete this->timers[i];
 	}
+	delete this->poll;
 }
 
 int EventLoop::init(int size){
-	return this->sctrl.init(size);
+	return this->poll->init(size);
+}
+
+const char* EventLoop::getName() const{
+	return this->poll->getName();
 }
 
 void EventLoop::stop(){
@@ -88,7 +113,7 @@ void EventLoop::stop(){
 }
 
 int EventLoop::createFileEvent(FileEvent* event,int fd){
-	FileEventVector_t& events = this->sctrl.getFileEvents();
+	FileEventVector_t& events = this->poll->getFileEvents();
 	if (fd >= static_cast<int>(events.size())) {
 		errno = ERANGE;
 		return AE_ERR;
@@ -97,7 +122,7 @@ int EventLoop::createFileEvent(FileEvent* event,int fd){
 	delete events[fd];
 	events[fd] = event;
 
-	if (this->sctrl.addEvent(fd, event->mask) == -1){
+	if (this->poll->addEvent(fd, event->mask) == -1){
 		return AE_ERR;
 	}
 	if (fd > this->maxfd){
@@ -107,7 +132,7 @@ int EventLoop::createFileEvent(FileEvent* event,int fd){
 }
 
 void EventLoop::deleteFileEvent(int fd, int mask){
-	FileEventVector_t& events = this->sctrl.getFileEvents();
+	FileEventVector_t& events = this->poll->getFileEvents();
 	if (fd >= static_cast<int>(events.size())) {
 		return ;
 	}
@@ -124,7 +149,7 @@ void EventLoop::deleteFileEvent(int fd, int mask){
 			}
 			this->maxfd = j;
 		}
-		this->sctrl.delEvent(fd, mask);
+		this->poll->delEvent(fd, mask);
 	}
 
 	if (fe->mask == AE_NONE){
@@ -134,7 +159,7 @@ void EventLoop::deleteFileEvent(int fd, int mask){
 }
 
 int EventLoop::getFileEvents(int fd){
-	FileEventVector_t& events = this->sctrl.getFileEvents();
+	FileEventVector_t& events = this->poll->getFileEvents();
 	if (fd >= static_cast<int>(events.size())) {
 		return 0;
 	}
@@ -214,9 +239,9 @@ int EventLoop::processEvents(int flags){
 			}
 		}
 
-		FileEventVector_t& events = this->sctrl.getFileEvents();
-		FiredEventVector_t& fired = this->sctrl.getFiredEvents();
-		int numevents = this->sctrl.poll(tvp,this->maxfd);
+		FileEventVector_t& events = this->poll->getFileEvents();
+		FiredEventVector_t& fired = this->poll->getFiredEvents();
+		int numevents = this->poll->poll(tvp,this->maxfd);
 		for (int j = 0; j < numevents; j ++) {
 			FileEvent *fe = events[fired[j].fd];
 			int mask = fired[j].mask;
@@ -255,7 +280,7 @@ int EventLoop::wait(int fd,int mask,long milliseconds){
 	if (mask & AE_READABLE) pfd.events |= POLLIN;
 	if (mask & AE_WRITABLE) pfd.events |= POLLOUT;
 
-	if ((retval = poll(&pfd, 1, milliseconds))== 1) {
+	if ((retval = ::poll(&pfd, 1, milliseconds))== 1) {
 		if (pfd.revents & POLLIN) retmask |= AE_READABLE;
 		if (pfd.revents & POLLOUT) retmask |= AE_WRITABLE;
 		if (pfd.revents & POLLERR) retmask |= AE_WRITABLE;
@@ -349,6 +374,7 @@ int EventLoop::processTimeEvents(){
 				addMillisecondsToNow(retval,&te->when_sec,&te->when_ms);
 			} else {
 				this->deleteTimeEvent(id);
+				end = this->timers.end();
 			}
 			itr = this->timers.begin();
 		}
