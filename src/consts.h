@@ -14,6 +14,7 @@ namespace redis{
 		REDIS_LOG_RAW = (1<<10), /* Modifier to log without timestamp */
 		REDIS_MAX_LOGMSG_LEN = 1024
 	};
+	extern const char* REDIS_VERSION;
 }
 
 #endif //_REDIS_CONSTS_H

@@ -1,20 +1,8 @@
-/** \file anet.cpp
-*
-* \brief 
-*
-* TODO 
-*
-* \author zade(zhaohongchao@gmail.com)
-*
-* \date 2013Äê7ÔÂ18ÈÕ
-*
-* \version 1.0.0 
-*
-* \since 1.0.0
-*/
-
-
+/************************************************************************/
+/*                                                                      */
+/************************************************************************/
 #include "fmacros.h"
+#include "anet.h"
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -30,8 +18,6 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
-
-#include "anet.h"
 
 namespace redis{ namespace {
 	void anetSetError(char *err, const char *fmt, ...)

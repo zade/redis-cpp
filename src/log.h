@@ -5,6 +5,7 @@
 #define _REDIS_LOG_H_
 
 #include <string>
+#include <stdarg.h>
 
 namespace redis{
 	
@@ -20,7 +21,14 @@ namespace redis{
 		void log(int level,const char *fmt, va_list al);
 		void logRaw(int level, const char *msg);
 		void logFromHandler(int level,int daemonize, const char *msg);
+		int	 logFD();
+
+		static Logging& instance();
 	};
+
+	void redisLog(int level, const char *fmt, ...);
+	void redisLogRaw(int level, const char *msg);
+	void redisLogFromHandler(int level,int daemonize, const char *msg);
 }
 
 #endif //_REDIS_LOG_H_

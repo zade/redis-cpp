@@ -6,12 +6,14 @@
 #include "util.h"
 
 #include <sys/time.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <syslog.h>
 
 namespace redis{namespace{
-
+	Logging _log_instance;
 }
 
 
@@ -82,6 +84,11 @@ void Logging::logRaw(int level, const char *msg){
 	}
 }
 
+int	 Logging::logFD(){
+	return this->path.empty() ?
+		open(this->path.c_str(), O_APPEND|O_CREAT|O_WRONLY, 0644) : STDOUT_FILENO;
+}
+
 void Logging::logFromHandler(int level, int daemonize,const char *msg){
 	
 	if ((level&0xff) < this->verbosity ||
@@ -90,8 +97,7 @@ void Logging::logFromHandler(int level, int daemonize,const char *msg){
 			return;
 	}
 	
-	int fd = this->path.empty() ?
-		open(this->path.c_str(), O_APPEND|O_CREAT|O_WRONLY, 0644) : STDOUT_FILENO;
+	int fd = this->logFD();
 	if (fd == -1) {
 		return;
 	}
@@ -128,6 +134,26 @@ void Logging::logFromHandler(int level, int daemonize,const char *msg){
 	if (!this->path.empty()) {
 		close(fd);
 	}
+}
+
+Logging& Logging::instance(){
+	return _log_instance;
+}
+
+
+void redisLog(int level, const char *fmt, ...){
+	va_list ap;
+	va_start(ap, fmt);
+	Logging::instance().log(level,fmt,ap);
+	va_end(ap);
+}
+
+void redisLogRaw(int level, const char *msg){
+	Logging::instance().logRaw(level,msg);
+}
+
+void redisLogFromHandler(int level,int daemonize, const char *msg){
+	Logging::instance().logFromHandler(level, daemonize,msg);
 }
 
 }

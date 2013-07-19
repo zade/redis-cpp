@@ -1,23 +1,14 @@
-/** \file anet.h *
-*
-* \brief 
-*
-* TODO 
-*
-* \author zade(zhaohongchao@gmail.com)
-*
-* \date 2013Äê7ÔÂ18ÈÕ
-*
-* \version 1.0
-*
-* \since 1.0
-*/
+/************************************************************************/
+/*                                                                      */
+/************************************************************************/
 #ifndef _REDIS_REDISCPP_ANET_H_
 #define _REDIS_REDISCPP_ANET_H_
 
 #if defined(__sun)
 #define AF_LOCAL AF_UNIX
 #endif
+
+#include <sys/types.h>
 
 namespace redis{
 	enum {

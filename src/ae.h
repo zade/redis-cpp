@@ -1,22 +1,9 @@
-/** \file ae.h *
-*
-* \brief 
-*
-* TODO 
-*
-* \author zade(zhaohongchao@gmail.com)
-*
-* \date 2013Äê7ÔÂ17ÈÕ
-*
-* \version 1.0
-*
-* \since 1.0
-*/
+/************************************************************************/
+/*                                                                      */
+/************************************************************************/
 #ifndef _REDIS_REDISCPP_AE_H_
 #define _REDIS_REDISCPP_AE_H_
 
-// replace with c11 <functional>
-#include <boost/function.hpp>
 #include <vector>
 #include <sys/time.h>
 
@@ -48,14 +35,10 @@ namespace redis{
 
 	typedef std::vector<FiredEvent> FiredEventVector_t;
 
-	class IEvent{
-	public:
-		virtual ~IEvent(){}
-	};
 
 	class EventLoop;
 
-	class FileEvent : public IEvent{
+	class FileEvent{
 	public:
 		int mask;
 		FileEvent()
@@ -69,7 +52,7 @@ namespace redis{
 
 	typedef std::vector<FileEvent*> FileEventVector_t;
 
-	class TimeEvent : public IEvent{
+	class TimeEvent{
 	public:
 		long id;
 		long when_sec;
@@ -85,9 +68,10 @@ namespace redis{
 
 	typedef std::vector<TimeEvent*> TimeEventVector_t;
 
-	typedef boost::function<void(EventLoop*)> BeforeSleepProc_t;
+	typedef void BeforeSleepProc_t(EventLoop*);
 
 	struct PollCtrl;
+
 	class EventLoop{
 		int maxfd;
 		int stop_flag;
@@ -95,7 +79,7 @@ namespace redis{
 		time_t lastTime;
 		PollCtrl* poll;
 		TimeEventVector_t timers;
-		BeforeSleepProc_t beforeSleepProc;
+		BeforeSleepProc_t* beforeSleepProc;
 
 		TimeEvent* searchNearestTimer();
 		int processTimeEvents();
@@ -113,7 +97,7 @@ namespace redis{
 		int processEvents(int flags);
 		void main();
 		const char* getName() const;
-		void setBeforeSleepProc(const BeforeSleepProc_t& sleepProc){
+		void setBeforeSleepProc(BeforeSleepProc_t* sleepProc){
 			this->beforeSleepProc = sleepProc;
 		}
 		//////////////////////////////////////////////////////////////////////////

@@ -1,17 +1,6 @@
-/** \file ae.cpp
-*
-* \brief 
-*
-* TODO 
-*
-* \author zade(zhaohongchao@gmail.com)
-*
-* \date 2013Äê7ÔÂ17ÈÕ
-*
-* \version 1.0.0 
-*
-* \since 1.0.0
-*/
+/************************************************************************/
+/*                                                                      */
+/************************************************************************/
 #include "ae.h"
 #include "config.h"
 
@@ -26,8 +15,7 @@
 #include <errno.h>
 
 namespace redis { namespace{
-	void getTime(long *seconds, long *milliseconds)
-	{
+	void getTime(long *seconds, long *milliseconds){
 		struct timeval tv;
 
 		gettimeofday(&tv, NULL);
@@ -294,7 +282,7 @@ int EventLoop::wait(int fd,int mask,long milliseconds){
 void EventLoop::main(){
 	this->stop_flag = 0;
 	while (!this->stop_flag) {
-		if (this->beforeSleepProc){
+		if (NULL != this->beforeSleepProc){
 			this->beforeSleepProc(this);
 		}
 		this->processEvents(AE_ALL_EVENTS);

@@ -1,18 +1,8 @@
-/** \file redis.cpp
-*
-* \brief 
-*
-* \author zade(zhaohongchao@gmail.com)
-*
-* \date 2013Äê7ÔÂ17ÈÕ
-*
-* \version 1.0.0 
-*
-* \since 1.0.0
-*/
-
+/************************************************************************/
+/*                                                                      */
+/************************************************************************/
 #include "redis.h"
-
+#include <string.h>
 
 namespace redis{ namespace{
 
