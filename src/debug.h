@@ -22,7 +22,10 @@ namespace redis{
 
 #define redisDebug(fmt, ...) \
 	printf("DEBUG %s:%d > " fmt "\n", __FILE__, __LINE__, __VA_ARGS__)
+
 #define redisDebugMark() \
 	printf("-- MARK %s:%d --\n", __FILE__, __LINE__)
+
+#define redisAssert(_e) ((_e)?(void)0 : (_redisAssert(#_e,__FILE__,__LINE__),_exit(1)))
 
 #endif //_REDIS_DEBUG_H_

@@ -16,7 +16,7 @@ release_hdr := $(shell sh -c './mkreleasehdr.sh')
 uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
 CC := $(shell sh -c 'type $(CC) >/dev/null 2>/dev/null && echo $(CC) || echo gcc')
 
-STD=-pedantic
+STD=-pedantic -D__STDC_CONSTANT_MACROS
 WARN=-Wall
 OPTIMIZATION?=-O2
 BOOST?=/usr/local/include
@@ -64,7 +64,7 @@ REDIS_INSTALL=$(QUIET_INSTALL)$(INSTALL)
 REDIS_SERVER_NAME= redis-server
 REDIS_SENTINEL_NAME= redis-sentinel
 #REDIS_SERVER_OBJ= adlist.o ae.o anet.o dict.o redis.o sds.o zmalloc.o lzf_c.o lzf_d.o pqsort.o zipmap.o sha1.o ziplist.o release.o networking.o util.o object.o db.o replication.o rdb.o t_string.o t_list.o t_set.o t_zset.o t_hash.o config.o aof.o pubsub.o multi.o debug.o sort.o intset.o syncio.o migrate.o endianconv.o slowlog.o scripting.o bio.o rio.o rand.o memtest.o crc64.o bitops.o sentinel.o
-REDIS_SERVER_OBJ= ae.o anet.o consts.o debug.o log.o redis.o release.o util.o
+REDIS_SERVER_OBJ= ae.o anet.o consts.o crc64.o debug.o log.o redis.o release.o rio.o util.o
 REDIS_CLI_NAME= redis-cli
 #REDIS_CLI_OBJ= anet.o sds.o adlist.o redis-cli.o zmalloc.o release.o anet.o ae.o
 REDIS_CLI_OBJ=
@@ -140,9 +140,11 @@ install: all
 
 ae.o: ae.cpp ae.h config.h
 anet.o: anet.cpp anet.h fmacros.h
+consts.o: consts.cpp
+crc64.o: crc64.cpp util.h
+debug.o: debug.cpp debug.h consts.h config.h
 log.o: log.cpp log.h
 redis.o: redis.cpp redis.h
 release.o: release.cpp release.h
+rio.o : rio.cpp rio.h 
 util.o: util.cpp util.h
-consts.o: consts.cpp
-debug.o: debug.cpp debug.h consts.h config.h

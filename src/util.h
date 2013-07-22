@@ -30,6 +30,8 @@
 #ifndef __REDIS_UTIL_H
 #define __REDIS_UTIL_H
 
+#include <stdint.h>
+
 namespace redis{
 	int stringmatchlen(const char *p, int plen, const char *s, int slen, int nocase);
 	int stringmatch(const char *p, const char *s, int nocase);
@@ -38,5 +40,7 @@ namespace redis{
 	int string2ll(const char *s, size_t slen, long *value);
 	int string2l(const char *s, size_t slen, long *value);
 	int d2string(char *buf, size_t len, double value);
+	//
+	uint64_t crc64(uint64_t crc, const unsigned char *s, uint64_t l);
 }
 #endif
